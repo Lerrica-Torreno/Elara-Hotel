@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # ELARA Hotel Frontend
 
 ELARA Hotel Frontend is the presentation layer of the Hotel Revenue & Room Management Platform.
