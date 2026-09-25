@@ -9,6 +9,7 @@ import BookingPage from "./pages/BookingPage";
 import ConfirmationPage from "./pages/ConfirmationPage";
 import MyBookingPage from "./pages/MyBookingPage";
 import CancellationPage from "./pages/CancellationPage";
+import { stayError } from "./utils/format";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("Home");
@@ -21,9 +22,11 @@ export default function App() {
     checkOut: "",
     guests: 2
   });
+  const [searchError, setSearchError] = useState("");
 
   function navigate(page) {
   setCurrentPage(page);
+  setSearchError("");
 
   setTimeout(() => {
     window.scrollTo({
@@ -35,10 +38,8 @@ export default function App() {
 
   function searchRooms(event) {
     event.preventDefault();
-    if (!search.checkIn || !search.checkOut || search.checkOut <= search.checkIn) {
-      alert("Please select a valid check-in and check-out date.");
-      return;
-    }
+    const error = stayError(search);
+    if (error) return setSearchError(error);
     navigate("Rooms");
   }
 
@@ -70,6 +71,7 @@ export default function App() {
         search={search}
         setSearch={setSearch}
         onSearch={searchRooms}
+        searchError={searchError}
         onNavigate={navigate}
         onViewRoom={viewRoom}
         onBookRoom={bookRoom}
@@ -86,6 +88,7 @@ export default function App() {
       <BookingPage
         room={selectedRoom}
         search={search}
+        setSearch={setSearch}
         onBack={() => navigate("Rooms")}
         onConfirmed={confirmReservation}
       />

@@ -13,7 +13,7 @@ export default function RoomCard({ room, onView, onBook }) {
         />
         <figcaption className="sr-only">{room.name} room preview</figcaption>
         <div className="absolute left-4 top-4">
-          <Badge tone="green">{room.available} left</Badge>
+          <Badge tone="green">Room type preview</Badge>
         </div>
       </figure>
 
@@ -30,7 +30,7 @@ export default function RoomCard({ room, onView, onBook }) {
 
         <div className="mt-5 flex items-end justify-between gap-4 border-t border-forest-900/10 pt-5">
           <div>
-            <p className="text-xs text-forest-900/50">Current rate from</p>
+            <p className="text-xs text-forest-900/50">Sample rate from</p>
             <p className="text-xl font-bold">{formatCurrency(room.displayRate)} <span className="text-xs font-normal text-forest-900/45">/ night</span></p>
           </div>
           <div className="flex gap-2">

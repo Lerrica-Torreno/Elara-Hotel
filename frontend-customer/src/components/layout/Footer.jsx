@@ -1,12 +1,4 @@
-import {
-  Facebook,
-  Instagram,
-  Mail,
-  MapPin,
-  Phone,
-  Send,
-  Clock3
-} from "lucide-react";
+import { MapPin } from "lucide-react";
 
 export default function Footer({ onNavigate }) {
   const quickLinks = [
@@ -57,23 +49,6 @@ export default function Footer({ onNavigate }) {
               and effortless booking.
             </p>
 
-            <div className="mt-6 flex gap-3">
-              <a
-                href="#"
-                aria-label="Elara Hotel on Facebook"
-                className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/70 transition hover:border-gold hover:bg-gold hover:text-forest-950"
-              >
-                <Facebook size={17} aria-hidden="true" />
-              </a>
-
-              <a
-                href="#"
-                aria-label="Elara Hotel on Instagram"
-                className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/70 transition hover:border-gold hover:bg-gold hover:text-forest-950"
-              >
-                <Instagram size={17} aria-hidden="true" />
-              </a>
-            </div>
           </section>
 
           {/* QUICK LINKS */}
@@ -114,9 +89,7 @@ export default function Footer({ onNavigate }) {
 
           {/* CONTACT */}
           <section>
-            <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-gold">
-              Contact Us
-            </h2>
+            <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-gold">Location preview</h2>
 
             <ul className="mt-5 space-y-4 text-sm text-white/65">
               <li className="flex items-start gap-3">
@@ -133,86 +106,28 @@ export default function Footer({ onNavigate }) {
                 </span>
               </li>
 
-              <li className="flex items-center gap-3">
-                <Phone
-                  size={17}
-                  className="shrink-0 text-gold"
-                  aria-hidden="true"
-                />
-
-                <span>
-                  +63 900 000 0000
-                </span>
-              </li>
-
-              <li className="flex items-center gap-3">
-                <Mail
-                  size={17}
-                  className="shrink-0 text-gold"
-                  aria-hidden="true"
-                />
-
-                <span>
-                  stay@elarahotel.ph
-                </span>
-              </li>
-
-              <li className="flex items-start gap-3">
-                <Clock3
-                  size={17}
-                  className="mt-0.5 shrink-0 text-gold"
-                  aria-hidden="true"
-                />
-
-                <span>
-                  Front Desk
-                  <br />
-                  24 hours daily
-                </span>
-              </li>
+              <li>Verified contact details and hotel policies will appear when this site is ready for real bookings.</li>
             </ul>
           </section>
         </div>
 
-        {/* NEWSLETTER / CTA */}
+        {/* ROOM CTA */}
         <div className="mt-14 rounded-3xl border border-white/10 bg-white/[0.04] p-6 md:flex md:items-center md:justify-between md:gap-10">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
-              Stay connected
+              Explore Elara
             </p>
 
             <h2 className="mt-2 text-xl font-bold">
-              Get updates and special hotel offers.
+              Find the room type for your trip.
             </h2>
 
             <p className="mt-2 text-sm text-white/55">
-              Receive occasional updates about Elara promotions and stays.
+              Browse sample rooms and rates while live booking is being connected.
             </p>
           </div>
 
-          <form
-            className="mt-5 flex max-w-md flex-1 gap-2 md:mt-0"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <label htmlFor="footer-email" className="sr-only">
-              Email address
-            </label>
-
-            <input
-              id="footer-email"
-              type="email"
-              placeholder="Enter your email"
-              className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-forest-950 placeholder:text-forest-900/40"
-            />
-
-            <button
-              type="submit"
-              aria-label="Subscribe to Elara updates"
-              className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gold text-forest-950 transition hover:brightness-105"
-            >
-              <Send size={17} aria-hidden="true" />
-            </button>
-          </form>
+          <button type="button" onClick={() => onNavigate("Rooms")} className="mt-5 rounded-xl bg-gold px-5 py-3 font-semibold text-forest-950 md:mt-0">Browse rooms</button>
         </div>
       </div>
 
@@ -223,28 +138,7 @@ export default function Footer({ onNavigate }) {
             © 2026 Elara Hotel. All rights reserved.
           </p>
 
-          <div className="flex flex-wrap gap-5">
-            <button
-              type="button"
-              className="transition hover:text-white"
-            >
-              Privacy Policy
-            </button>
-
-            <button
-              type="button"
-              className="transition hover:text-white"
-            >
-              Terms & Conditions
-            </button>
-
-            <button
-              type="button"
-              className="transition hover:text-white"
-            >
-              Booking Policy
-            </button>
-          </div>
+          <p>Frontend demonstration · contact and policy details pending verification</p>
         </div>
       </div>
     </footer>

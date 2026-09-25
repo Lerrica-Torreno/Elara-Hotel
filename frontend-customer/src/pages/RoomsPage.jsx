@@ -9,11 +9,11 @@ export default function RoomsPage({ search, onViewRoom, onBookRoom }) {
   const [sort, setSort] = useState("recommended");
 
   const visibleRooms = useMemo(() => {
-    let result = roomTypes.filter((room) => capacity === "All" || room.capacity >= Number(capacity));
+    let result = roomTypes.filter((room) => room.capacity >= Math.max(Number(search.guests) || 1, capacity === "All" ? 1 : Number(capacity)));
     if (sort === "low") result = [...result].sort((a,b) => a.displayRate - b.displayRate);
     if (sort === "high") result = [...result].sort((a,b) => b.displayRate - a.displayRate);
     return result;
-  }, [capacity, sort]);
+  }, [capacity, sort, search.guests]);
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-12 lg:px-8">
@@ -55,6 +55,7 @@ export default function RoomsPage({ search, onViewRoom, onBookRoom }) {
           <RoomCard key={room.id} room={room} onView={onViewRoom} onBook={onBookRoom} />
         ))}
       </div>
+      {visibleRooms.length === 0 && <p role="status" className="mt-8 rounded-2xl bg-white p-6 text-sm">No room type fits this party size. Try fewer guests or a different filter.</p>}
     </section>
   );
 }

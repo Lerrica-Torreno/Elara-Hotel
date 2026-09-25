@@ -13,11 +13,13 @@ import {
 import SectionHeading from "../components/ui/SectionHeading";
 import RoomCard from "../components/ui/RoomCard";
 import { roomTypes } from "../data/mockData";
+import { todayLocal } from "../utils/format";
 
 export default function HomePage({
   search,
   setSearch,
   onSearch,
+  searchError,
   onNavigate,
   onViewRoom,
   onBookRoom
@@ -97,9 +99,10 @@ export default function HomePage({
           </h2>
 
           <p className="mt-1 text-sm text-forest-900/60">
-            Choose your dates and number of guests to browse available room
-            types.
+            Choose your dates and number of guests to explore room types and sample rates. Live availability is not connected yet.
           </p>
+
+          {searchError && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-800">{searchError}</p>}
 
           <div className="mt-5 grid gap-4 md:grid-cols-[1fr_1fr_.8fr_auto] md:items-end">
             <div>
@@ -114,6 +117,7 @@ export default function HomePage({
               <input
                 id="home-check-in"
                 type="date"
+                min={todayLocal()}
                 value={search.checkIn}
                 onChange={(e) =>
                   setSearch({
@@ -138,6 +142,7 @@ export default function HomePage({
               <input
                 id="home-check-out"
                 type="date"
+                min={search.checkIn || todayLocal()}
                 value={search.checkOut}
                 onChange={(e) =>
                   setSearch({

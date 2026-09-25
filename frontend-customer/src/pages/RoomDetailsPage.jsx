@@ -19,7 +19,7 @@ export default function RoomDetailsPage({ room, onBack, onBook }) {
           </figure>
 
           <article>
-            <Badge tone="green">{room.available} rooms currently available</Badge>
+            <Badge tone="green">Room type preview · availability unverified</Badge>
             <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-gold">{room.tagline}</p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-forest-950">{room.name}</h1>
             <p className="mt-5 leading-7 text-forest-900/65">{room.description}</p>
