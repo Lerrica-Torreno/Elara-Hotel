@@ -189,4 +189,3 @@ npm run build
 - Current room rates and availability use mock data for frontend development.
 - No real payment is processed.
 - The backend should become the source of truth for room availability, final pricing, discounts, cancellation eligibility, payments, and reservation status.
->>>>>>> a2199d0 (initial commit for ELARA frontend-Customer)
