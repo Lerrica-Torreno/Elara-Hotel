@@ -1,7 +1,8 @@
 import { BedDouble, CalendarCheck, CircleDollarSign, LogOut, TrendingUp, Wrench, CreditCard, Layers3, Globe2, XCircle } from "lucide-react";
 import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
-import { demandHistory, reservations, rooms } from "../data/mockData";
+import { cancellations, demandHistory, payments, reservations, rooms } from "../data/mockData";
+import { formatCurrency } from "../utils/format";
 
 function Metric({ icon: Icon, label, value, note }) {
   return (
@@ -22,16 +23,20 @@ export default function DashboardPage({ onNavigate }) {
   const onlineBookings = reservations.filter((r) => r.source === "Online Booking").length;
   const pendingAssignments = reservations.filter((r) => r.assignment === "Pending Assignment").length;
   const pendingPayments = reservations.filter((r) => r.payment === "Unpaid").length;
+  const occupancy = Math.round(occupied / rooms.length * 100);
+  const collected = payments.filter((payment) => payment.date === "2026-09-25" && payment.status !== "Refunded").reduce((sum, payment) => sum + payment.amount, 0);
+  const arrivals = reservations.filter((reservation) => reservation.checkIn === "2026-09-25").length;
+  const departures = reservations.filter((reservation) => reservation.checkOut === "2026-09-25").length;
 
   return (
     <>
       <section className="mb-6 rounded-[2rem] bg-gradient-to-br from-forest-900 to-forest-700 p-6 text-white shadow-soft md:p-8" aria-labelledby="dashboard-summary">
-        <p className="text-sm font-semibold text-gold">Friday, September 25, 2026</p>
+        <p className="text-sm font-semibold text-gold">Sample snapshot · September 25, 2026</p>
         <h1 id="dashboard-summary" className="mt-2 max-w-3xl text-3xl font-bold leading-tight md:text-4xl">
-          Elara is operating at <span className="text-gold">86% occupancy</span> today.
+          <span className="text-gold">{occupancy}% occupancy</span> across the sample rooms.
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">
-          Customer bookings now flow into this admin workspace for payment tracking, room assignment, check-in, housekeeping, and revenue management.
+          Explore sample booking, payment, room assignment, check-in, housekeeping, and pricing workflows. Live customer bookings will appear after backend integration.
         </p>
         <button
           type="button"
@@ -44,21 +49,21 @@ export default function DashboardPage({ onNavigate }) {
       </section>
 
       <section aria-labelledby="today-metrics">
-        <h2 id="today-metrics" className="sr-only">Today&apos;s hotel metrics</h2>
+        <h2 id="today-metrics" className="sr-only">Sample snapshot metrics</h2>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Metric icon={BedDouble} label="Occupancy" value="86%" note={`${occupied} occupied sample rooms`} />
-          <Metric icon={CircleDollarSign} label="Today's revenue" value="₱174,300" note="+11.2% vs. yesterday" />
-          <Metric icon={CalendarCheck} label="Arrivals" value="18" note="7 already checked in" />
-          <Metric icon={LogOut} label="Departures" value="14" note="9 already completed" />
+          <Metric icon={BedDouble} label="Sample occupancy" value={`${occupancy}%`} note={`${occupied} occupied of ${rooms.length} sample rooms`} />
+          <Metric icon={CircleDollarSign} label="Sample payments Sep 25" value={formatCurrency(collected)} note="Paid and deposited sample transactions" />
+          <Metric icon={CalendarCheck} label="Sample arrivals Sep 25" value={String(arrivals)} note="From sample reservations" />
+          <Metric icon={LogOut} label="Sample departures Sep 25" value={String(departures)} note="From sample reservations" />
         </div>
       </section>
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-labelledby="customer-flow-metrics">
         <h2 id="customer-flow-metrics" className="sr-only">Customer booking flow metrics</h2>
-        <Metric icon={Globe2} label="Online bookings" value={String(onlineBookings)} note="Created from customer UI" />
+        <Metric icon={Globe2} label="Online booking examples" value={String(onlineBookings)} note="Sample records; customer UI not connected" />
         <Metric icon={Layers3} label="Pending assignment" value={String(pendingAssignments)} note="Need actual room numbers" />
         <Metric icon={CreditCard} label="Pending payment" value={String(pendingPayments)} note="Require payment follow-up" />
-        <Metric icon={XCircle} label="Cancellations" value="2" note="Review refunds & released rooms" />
+        <Metric icon={XCircle} label="Cancellations" value={String(cancellations.length)} note="Sample cancellation records" />
       </section>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_.75fr]">

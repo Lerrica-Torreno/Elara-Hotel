@@ -1,4 +1,4 @@
-import { Bell, Menu, Search } from "lucide-react";
+import { Menu } from "lucide-react";
 
 export default function Topbar({ page, onOpenMenu, onNewReservation }) {
   return (
@@ -19,19 +19,7 @@ export default function Topbar({ page, onOpenMenu, onNewReservation }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="hidden items-center gap-2 rounded-xl border border-forest-900/10 bg-white px-3 py-2 md:flex">
-          <Search size={16} className="text-forest-900/45" aria-hidden="true" />
-          <span className="sr-only">Search hotel records</span>
-          <input
-            type="search"
-            placeholder="Search guest or room"
-            className="w-48 bg-transparent text-sm outline-none"
-          />
-        </label>
-        <button type="button" className="relative rounded-xl border border-forest-900/10 bg-white p-2.5" aria-label="Notifications">
-          <Bell size={18} aria-hidden="true" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
-        </button>
+        <span className="hidden rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 sm:inline">Sample data · frontend preview</span>
         <button
           type="button"
           onClick={onNewReservation}

@@ -1,191 +1,45 @@
-# ELARA Hotel Frontend
+# Elara Hotel frontend
 
-ELARA Hotel Frontend is the presentation layer of the Hotel Revenue & Room Management Platform.
+Two independent React/Vite interfaces for the hotel coursework project:
 
-The frontend is divided into two separate interfaces:
-
-- Customer Frontend
-- Admin / Staff Frontend
-
-Both interfaces are built with React, Vite, Tailwind CSS, JavaScript, and JSX.
-
-The Customer Frontend is used by hotel guests, while the Admin Frontend is used by hotel staff to manage hotel operations.
-
----
-
-## Frontend Technologies
-
-The frontend uses:
-
-- React
-- JavaScript
-- JSX
-- Vite
-- Tailwind CSS
-- HTML5
-- Lucide React Icons
-
----
-
-# Customer Frontend
-
-The Customer Frontend provides guests with a simple and responsive hotel booking experience.
-
-## Main Features
-
-- Responsive homepage
-- Hotel navigation
-- Check-in date selection
-- Check-out date selection
-- Guest count selection
-- Room search
-- Room type browsing
-- Room filtering
-- Room sorting
-- Room details
-- Room amenities
-- Hotel promotions
-- Booking form
-- Booking summary
-- Payment option interface
-- Reservation confirmation
-- Booking lookup
-- Cancellation request
-- Responsive mobile navigation
-- Hotel-style footer
-- ELARA Hotel branding
-
----
-
-## Customer Booking Flow
-
-```text
-Home
-  ↓
-Search Stay
-  ↓
-Browse Room Types
-  ↓
-View Room Details
-  ↓
-Select Room Type
-  ↓
-Enter Guest Information
-  ↓
-Review Booking
-  ↓
-Choose Payment Option
-  ↓
-Confirm Reservation
-  ↓
-View Booking
-=======
-# Elara Hotel Customer UI
-
-A frontend-only React/Vite/Tailwind customer booking interface for the Elara Hotel Revenue & Room Management Platform.
-
-## Customer Flow
-
-1. Home page
-2. Search by check-in, check-out, and guest count
-3. Browse room types
-4. View room details
-5. Select a room type
-6. Enter guest details
-7. Review rate and payment option
-8. Confirm reservation
-9. View booking
-10. Request cancellation
-
-Customers book a **room type**, not a specific room number. The actual room assignment remains an admin/staff responsibility.
-
-## Frontend Features
-
-- Responsive customer navigation
-- Accessible booking search form
-- Room listing and filtering
-- Room details
-- Promotions / offers
-- Multi-step booking form
-- Booking summary
-- Demo payment selection
-- Reservation confirmation
-- Reservation lookup
-- Cancellation request
-- Mobile-friendly navigation
-- Error/status messages with text
-- Focus-visible styles and keyboard-operable controls
-- Semantic HTML structure
-
-## Course Principles Applied
-
-### Three-tier architecture
-This React app is presentation-only. It does not access the database directly.
-
-### Semantic HTML
-The frontend uses meaningful elements such as:
-- `header`
-- `nav`
-- `main`
-- `section`
-- `article`
-- `aside`
-- `figure`
-- `footer`
-- `form`
-- `fieldset`
-- `table` where appropriate
-
-### Accessibility
-- Real labels for form fields
-- Meaningful alt text for informational images
-- Decorative images use empty alt text
-- Keyboard-operable controls
-- Focus-visible styling
-- Error messages use text, not only color
-- Skip-to-content link
-- Logical heading hierarchy
-
-### React
-- Reusable components
-- Props
-- `useState`
-- Event handlers
-- Controlled inputs
-- `.map()` list rendering with stable ids
-
-### REST-ready
-`src/services/api.js` documents the customer-side API contract. The React app should eventually consume backend endpoints rather than duplicate business logic.
-
-## Expected backend resources
-
-Examples:
-
-- `GET /api/room-types?check_in=...&check_out=...&guests=...`
-- `GET /api/room-types/{id}`
-- `POST /api/pricing/preview`
-- `GET /api/promotions`
-- `POST /api/reservations`
-- `GET /api/reservations/{id}`
-- `PATCH /api/reservations/{id}`
-- `DELETE /api/reservations/{id}`
-- `POST /api/payments`
+| Folder | Audience | Current scope |
+| --- | --- | --- |
+| `frontend-customer/` | Guests | Room browsing, stay search, pricing preview, booking walkthrough, session-only preview lookup, cancellation walkthrough |
+| `admin/` | Staff | Dashboard and sample room, reservation, payment, housekeeping, maintenance, promotion, and pricing workflows |
 
 ## Run locally
 
+Open a separate terminal for each interface:
+
 ```bash
-npm install
+cd frontend-customer
+npm ci
 npm run dev
 ```
 
-## Build
-
 ```bash
-npm run build
+cd admin
+npm ci
+npm run dev
 ```
 
-## Notes
+From each folder, `npm run build` produces a production bundle in `dist/`.
 
-- Current room rates and availability use mock data for frontend development.
-- No real payment is processed.
-- The backend should become the source of truth for room availability, final pricing, discounts, cancellation eligibility, payments, and reservation status.
+## What works today
+
+The guest can pick dates and party size, compare rooms that fit the party, choose a room type, enter guest details, and review an estimated total with an itemized sample rate and tax. Date, guest-count, and room-capacity checks run before review. The resulting reference is a **browser-session preview**, not a hotel reservation. It can be looked up only with the matching reference and email in the current session. The cancellation screen also demonstrates a form without submitting a request.
+
+The staff interface uses local sample records. Its dashboard and payment totals describe those sample records; edits in one page are not yet shared across the other pages.
+
+## Backend integration handoff
+
+Before a real booking can be confirmed:
+
+1. Agree on the API contract with the backend team. The draft helpers in `src/services/api.js` are **proposals**, not an implemented contract; the WebSystemsMidtermProj backend currently has routes under `/api/v1` with different payloads and authentication requirements.
+2. Load room types and availability for the actual dates and party size. The counts in mock data do not establish live availability.
+3. Obtain the itemized quote from one backend pricing service for both guest and staff interfaces. Validate discounts, taxes, and the final total on the server.
+4. Submit a reservation and use the returned ID and status only after the server accepts it. Implement real lookup and cancellation with authorization and policy checks.
+5. Connect staff edits and metrics to persisted records, and provide staff authentication before exposing operational data.
+6. Replace sample photos, contact details, policies, and offer eligibility with verified hotel content before launch.
+
+This frontend never writes to PostgreSQL directly. Use the backend as the source of truth for inventory, pricing, reservations, and payments.

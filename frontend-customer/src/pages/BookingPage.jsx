@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, CreditCard, Info, ShieldCheck } from "lucide-react";
 import FormField from "../components/ui/FormField";
-import Badge from "../components/ui/Badge";
-import { formatCurrency, nightsBetween } from "../utils/format";
+import { formatCurrency, nightsBetween, stayError, todayLocal } from "../utils/format";
 
-export default function BookingPage({ room, search, onBack, onConfirmed }) {
+export default function BookingPage({ room, search, setSearch, onBack, onConfirmed }) {
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [guest, setGuest] = useState({
@@ -16,12 +15,17 @@ export default function BookingPage({ room, search, onBack, onConfirmed }) {
   });
   const [paymentMethod, setPaymentMethod] = useState("Pay at hotel");
 
-  const nights = Math.max(1, nightsBetween(search.checkIn, search.checkOut));
+  const nights = stayError(search, room.capacity) ? 0 : nightsBetween(search.checkIn, search.checkOut);
   const subtotal = room.displayRate * nights;
   const taxes = Math.round(subtotal * 0.12);
   const total = subtotal + taxes;
 
   function validateGuest() {
+    const datesError = stayError(search, room.capacity);
+    if (datesError) {
+      setError(datesError);
+      return false;
+    }
     if (!guest.firstName.trim() || !guest.lastName.trim() || !guest.email.trim() || !guest.phone.trim()) {
       setError("Please complete all required guest details.");
       return false;
@@ -40,20 +44,24 @@ export default function BookingPage({ room, search, onBack, onConfirmed }) {
   }
 
   function confirmBooking() {
+    if (!validateGuest()) {
+      setStep(1);
+      return;
+    }
     onConfirmed({
-      id: "ER-DEMO-2026",
+      id: `PREVIEW-${Date.now().toString(36).toUpperCase()}`,
       guest: `${guest.firstName} ${guest.lastName}`,
       email: guest.email,
       phone: guest.phone,
       roomType: room.name,
       room: "To be assigned",
-      checkIn: search.checkIn || "2026-09-27",
-      checkOut: search.checkOut || "2026-09-29",
-      guests: search.guests || 2,
+      checkIn: search.checkIn,
+      checkOut: search.checkOut,
+      guests: Number(search.guests),
       amount: total,
       payment: paymentMethod === "Pay at hotel" ? "Unpaid" : "Payment Pending",
-      status: "Confirmed",
-      source: "Online Booking"
+      status: "Preview only",
+      source: "Frontend preview"
     });
   }
 
@@ -64,16 +72,17 @@ export default function BookingPage({ room, search, onBack, onConfirmed }) {
       </button>
 
       <div className="mb-8">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Secure your stay</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Complete your reservation</h1>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Booking preview</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Plan your stay</h1>
         <p className="mt-2 text-sm text-forest-900/60">You are booking the <strong>{room.name}</strong> room type. Your specific room number will be assigned by the hotel.</p>
+        <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">This preview does not hold a room or send a reservation. Final rates and availability require the hotel backend.</p>
       </div>
 
       <ol className="mb-8 grid gap-3 sm:grid-cols-3" aria-label="Booking progress">
         {[
           [1, "Guest details"],
           [2, "Review & payment"],
-          [3, "Confirmation"]
+          [3, "Preview"]
         ].map(([number, label]) => (
           <li key={number} className={`rounded-2xl border p-4 ${step >= number ? "border-gold bg-amber-50" : "border-forest-900/10 bg-white"}`}>
             <p className="text-xs font-bold text-gold">STEP {number}</p>
@@ -86,6 +95,19 @@ export default function BookingPage({ room, search, onBack, onConfirmed }) {
         <div>
           {step === 1 && (
             <form onSubmit={continueToReview} className="rounded-3xl border border-forest-900/10 bg-white p-6 shadow-soft" noValidate>
+              <h2 className="text-xl font-bold">Stay details</h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                <FormField id="stay-check-in" label="Check-in">
+                  {() => <input id="stay-check-in" type="date" min={todayLocal()} value={search.checkIn} onChange={(e) => setSearch({ ...search, checkIn: e.target.value })} className="w-full rounded-xl border border-forest-900/15 px-3 py-3" required />}
+                </FormField>
+                <FormField id="stay-check-out" label="Check-out">
+                  {() => <input id="stay-check-out" type="date" min={search.checkIn || todayLocal()} value={search.checkOut} onChange={(e) => setSearch({ ...search, checkOut: e.target.value })} className="w-full rounded-xl border border-forest-900/15 px-3 py-3" required />}
+                </FormField>
+                <FormField id="stay-guests" label="Guests">
+                  {() => <select id="stay-guests" value={search.guests} onChange={(e) => setSearch({ ...search, guests: Number(e.target.value) })} className="w-full rounded-xl border border-forest-900/15 px-3 py-3">{Array.from({ length: room.capacity }, (_, i) => i + 1).map((count) => <option key={count} value={count}>{count} {count === 1 ? "guest" : "guests"}</option>)}</select>}
+                </FormField>
+              </div>
+              <div className="mt-7 border-t border-forest-900/10 pt-6" />
               <h2 className="text-xl font-bold">Guest information</h2>
               <p className="mt-1 text-sm text-forest-900/55">Fields marked as required must be completed before continuing.</p>
 
@@ -98,7 +120,7 @@ export default function BookingPage({ room, search, onBack, onConfirmed }) {
                 <FormField id="last-name" label="Last name">
                   {() => <input id="last-name" value={guest.lastName} onChange={(e) => setGuest({ ...guest, lastName: e.target.value })} className="w-full rounded-xl border border-forest-900/15 px-3 py-3" required />}
                 </FormField>
-                <FormField id="email" label="Email address" hint="Your booking confirmation will be sent here.">
+                <FormField id="email" label="Email address" hint="Used only in this browser session for the preview.">
                   {({ describedBy }) => <input id="email" type="email" value={guest.email} onChange={(e) => setGuest({ ...guest, email: e.target.value })} aria-describedby={describedBy} className="w-full rounded-xl border border-forest-900/15 px-3 py-3" required />}
                 </FormField>
                 <FormField id="phone" label="Mobile number">
@@ -145,12 +167,12 @@ export default function BookingPage({ room, search, onBack, onConfirmed }) {
 
               <aside className="mt-6 flex gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
                 <Info size={18} className="shrink-0" aria-hidden="true" />
-                This is a frontend prototype. No real payment will be processed.
+                This is a frontend prototype. No room is reserved and no payment is processed.
               </aside>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <button type="button" onClick={() => setStep(1)} className="rounded-xl border border-forest-900/15 px-4 py-3 font-semibold">Back</button>
-                <button type="button" onClick={confirmBooking} className="flex-1 rounded-xl bg-forest-900 px-4 py-3 font-semibold text-white">Confirm reservation</button>
+                <button type="button" onClick={confirmBooking} className="flex-1 rounded-xl bg-forest-900 px-4 py-3 font-semibold text-white">Finish booking preview</button>
               </div>
             </section>
           )}
@@ -163,9 +185,9 @@ export default function BookingPage({ room, search, onBack, onConfirmed }) {
           <p className="text-sm text-forest-900/55">{room.beds}</p>
 
           <dl className="mt-5 space-y-3 border-t border-forest-900/10 pt-4 text-sm">
-            <div className="flex justify-between gap-4"><dt>Room rate × {nights}</dt><dd>{formatCurrency(subtotal)}</dd></div>
+            <div className="flex justify-between gap-4"><dt>Sample room rate × {nights} nights</dt><dd>{nights ? formatCurrency(subtotal) : "Select dates"}</dd></div>
             <div className="flex justify-between gap-4"><dt>Taxes / fees</dt><dd>{formatCurrency(taxes)}</dd></div>
-            <div className="flex justify-between gap-4 border-t border-forest-900/10 pt-3 text-base font-bold"><dt>Total</dt><dd>{formatCurrency(total)}</dd></div>
+            <div className="flex justify-between gap-4 border-t border-forest-900/10 pt-3 text-base font-bold"><dt>Estimated total</dt><dd>{nights ? formatCurrency(total) : "Select dates"}</dd></div>
           </dl>
 
           <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-forest-900/55"><ShieldCheck size={15} className="mt-0.5 shrink-0" aria-hidden="true" /> Final pricing and payment validation belong to the backend after integration.</p>

@@ -7,15 +7,18 @@ import { formatCurrency } from "../utils/format";
 
 export default function PaymentsPage() {
   const unpaid = reservations.filter((r) => r.payment === "Unpaid");
+  const collected = payments.filter((p) => p.date === "2026-09-25" && p.status !== "Refunded").reduce((total, p) => total + p.amount, 0);
+  const outstanding = unpaid.reduce((total, r) => total + r.amount, 0);
+  const refunds = payments.filter((p) => p.status === "Refunded").reduce((total, p) => total + p.amount, 0);
 
   return (
     <>
-      <PageHeader title="Payments" description="Track payment status coming from online bookings, walk-ins, and front-desk reservations." />
+      <PageHeader title="Payments" description="Preview payment records from sample online bookings, walk-ins, and front-desk reservations." />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-4">
-        <Card><p className="text-sm text-forest-900/55">Collected today</p><p className="mt-1 text-2xl font-bold">₱132,400</p></Card>
-        <Card><p className="text-sm text-forest-900/55">Outstanding</p><p className="mt-1 text-2xl font-bold">₱41,900</p></Card>
-        <Card><p className="text-sm text-forest-900/55">Refunds</p><p className="mt-1 text-2xl font-bold">₱7,200</p></Card>
+        <Card><p className="text-sm text-forest-900/55">Sample collected Sep 25</p><p className="mt-1 text-2xl font-bold">{formatCurrency(collected)}</p></Card>
+        <Card><p className="text-sm text-forest-900/55">Sample unpaid bookings</p><p className="mt-1 text-2xl font-bold">{formatCurrency(outstanding)}</p></Card>
+        <Card><p className="text-sm text-forest-900/55">Sample refunded transaction</p><p className="mt-1 text-2xl font-bold">{formatCurrency(refunds)}</p></Card>
         <Card><p className="text-sm text-forest-900/55">Unpaid bookings</p><p className="mt-1 text-2xl font-bold">{unpaid.length}</p></Card>
       </div>
 
