@@ -1,9 +1,11 @@
 import { ZodError } from 'zod';
 
+// Return a consistent 404 response when no mounted route matches the request.
 export function notFound(req, res) {
   res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
 }
 
+// Convert validation and application errors into safe, structured API responses.
 export function errorHandler(error, _req, res, _next) {
   if (error instanceof ZodError) {
     return res.status(400).json({

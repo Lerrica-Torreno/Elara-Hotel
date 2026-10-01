@@ -34,6 +34,7 @@ function nightsBetween(
   a,
   b
 ) {
+  // Convert a check-in/check-out range into the billable night count.
   return Math.ceil(
     (
       b.getTime() -
@@ -46,6 +47,7 @@ function nightsBetween(
 function roundMoney(
   value
 ) {
+  // Round monetary calculations to the currency's two decimal places.
   return Math.round(
     Number(value) * 100
   ) / 100;
@@ -54,6 +56,7 @@ function roundMoney(
 async function uniqueReservationReference(
   tx
 ) {
+  // Retry reference generation within the transaction to avoid collisions.
   for (
     let i = 0;
     i < 5;
@@ -85,6 +88,7 @@ export async function createReservation(
   customerProfileId = null,
   createdByUserId = null
 ) {
+  // Validate the stay and guest, calculate its price, then atomically reserve inventory and persist records.
   const checkInDate =
     new Date(
       `${input.checkInDate}T00:00:00.000Z`
@@ -152,6 +156,7 @@ export async function createReservation(
     );
   }
 
+  // Use the pricing service as the source of truth for the nightly rate.
   const quote =
     await calculateRate({
       roomTypeId:
@@ -255,6 +260,7 @@ export async function createReservation(
         taxAmount
     );
 
+  // Recheck inventory and promotion limits inside a serializable transaction before creating the booking.
   return prisma.$transaction(
     async (tx) => {
       const sellable =

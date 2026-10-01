@@ -32,6 +32,7 @@ import {
 
 const router = Router();
 
+// Validate customer registration fields shared with staff-account creation.
 const registerSchema =
   z.object({
     firstName: z
@@ -59,6 +60,7 @@ const registerSchema =
       passwordSchema
   });
 
+// Validate the minimal credentials accepted by customer and staff login endpoints.
 const loginSchema =
   z.object({
     email:
@@ -74,6 +76,7 @@ const loginSchema =
 // CUSTOMER REGISTER
 // ============================================================
 
+// Register a customer or upgrade an anonymous booking profile into a login account.
 router.post(
   '/customer/register',
 
@@ -253,6 +256,7 @@ router.post(
 // CUSTOMER LOGIN
 // ============================================================
 
+// Authenticate customer credentials and issue a customer-portal session.
 router.post(
   '/customer/login',
 
@@ -325,6 +329,7 @@ router.post(
 // ADMIN BOOTSTRAP
 // ============================================================
 
+// Create the first administrator and start its authenticated session.
 router.post(
   '/admin/bootstrap',
 
@@ -370,6 +375,7 @@ router.post(
 // ADMIN LOGIN
 // ============================================================
 
+// Authenticate staff roles and issue an admin-portal session.
 router.post(
   '/admin/login',
 
@@ -442,6 +448,7 @@ router.post(
 // LOGOUT
 // ============================================================
 
+// Expire the session cookie associated with the requesting portal.
 router.post(
   '/logout',
 
@@ -460,6 +467,7 @@ router.post(
 // CURRENT USER
 // ============================================================
 
+// Return the authenticated user's safe public profile.
 router.get(
   '/me',
 
@@ -481,6 +489,7 @@ router.get(
 // CREATE STAFF USER
 // ============================================================
 
+// Let administrators create staff accounts with an explicitly permitted role.
 router.post(
   '/admin/staff',
 

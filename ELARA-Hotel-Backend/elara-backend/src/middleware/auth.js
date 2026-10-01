@@ -11,6 +11,7 @@ import {
   HttpError
 } from '../utils/httpError.js';
 
+// Roles permitted to enter staff-only API areas.
 export const adminRoles = [
   'SUPER_ADMIN',
   'ADMIN',
@@ -26,6 +27,7 @@ export const adminRoles = [
 async function userFromRequest(
   req
 ) {
+  // Resolve the session token and reload its user so disabled or changed accounts cannot retain access.
   const token =
     readToken(
       req
@@ -88,6 +90,7 @@ export async function optionalAuth(
   _res,
   next
 ) {
+  // Attach a valid user when present, but allow requests with missing or invalid sessions to continue.
   try {
     const user =
       await userFromRequest(
@@ -121,6 +124,7 @@ export async function requireAuth(
   _res,
   next
 ) {
+  // Reject requests without a valid active-user session before protected handlers run.
   try {
     const token =
       readToken(
@@ -214,6 +218,7 @@ export async function requireAuth(
 export function requireRoles(
   ...roles
 ) {
+  // Build route middleware that grants access only to the listed user roles.
   return (
     req,
     _res,
@@ -246,6 +251,7 @@ export function requireCustomer(
   _res,
   next
 ) {
+  // Restrict customer-owned operations to authenticated customer accounts.
   if (
     !req.user ||
     req.user.role !==
@@ -271,6 +277,7 @@ export function requireAdmin(
   _res,
   next
 ) {
+  // Restrict staff operations to the shared set of administrative roles.
   if (
     !req.user ||
     !adminRoles.includes(

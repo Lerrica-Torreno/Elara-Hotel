@@ -32,6 +32,7 @@ const router = Router();
 // ROOM TYPES
 // ============================================================
 
+// List active room types for customer-facing browsing.
 router.get(
   '/room-types',
 
@@ -61,6 +62,7 @@ router.get(
 // AVAILABILITY
 // ============================================================
 
+// Validate a requested stay and return room types with inventory and prices available.
 router.get(
   '/availability',
 
@@ -134,6 +136,7 @@ router.get(
 // PRICING QUOTE
 // ============================================================
 
+// Quote the current nightly price and rule breakdown for a room type and date range.
 router.get(
   '/pricing/quote',
 
@@ -190,6 +193,7 @@ router.get(
 // VALIDATE PROMOTION
 // ============================================================
 
+// Check a customer promotion code against the submitted subtotal.
 router.post(
   '/promotions/validate',
 
@@ -254,6 +258,7 @@ router.post(
 // VALIDATE DISCOUNT
 // ============================================================
 
+// Check a customer-visible discount code against the submitted subtotal.
 router.post(
   '/discounts/validate',
 

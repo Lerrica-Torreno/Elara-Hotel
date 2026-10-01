@@ -2,6 +2,7 @@ import { prisma } from '../config/prisma.js';
 import { HttpError } from '../utils/httpError.js';
 
 function roundMoney(value) {
+  // Keep computed promotion savings aligned with the currency's two decimal places.
   return Math.round(
     Number(value) * 100
   ) / 100;
@@ -12,6 +13,7 @@ export async function validatePromotion(
   subtotal,
   onDate = new Date()
 ) {
+  // Enforce promotion dates, usage limits, and minimum spend before computing savings.
   if (!code) {
     return {
       promotion: null,

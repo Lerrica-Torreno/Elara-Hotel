@@ -16,6 +16,7 @@ import { HttpError } from '../utils/httpError.js';
 
 const router = Router();
 
+// Require an authenticated staff account for every administrative endpoint below.
 router.use(
   requireAuth,
   requireRoles(...adminRoles)
@@ -25,6 +26,7 @@ router.use(
 // DASHBOARD
 // ============================================================
 
+// Aggregate hotel revenue, payment, booking, room, arrival, and departure metrics.
 router.get(
   '/dashboard',
   asyncHandler(async (_req, res) => {
@@ -165,6 +167,7 @@ router.get(
 // ROOM TYPES
 // ============================================================
 
+// List room types and provide administrator-only creation and editing operations.
 router.get(
   '/room-types',
   asyncHandler(async (_req, res) => {
@@ -314,6 +317,7 @@ router.patch(
 // ROOMS
 // ============================================================
 
+// Browse and maintain physical room inventory and operational status.
 router.get(
   '/rooms',
   asyncHandler(async (req, res) => {
@@ -471,6 +475,7 @@ router.patch(
 // RESERVATIONS
 // ============================================================
 
+// Search reservations and run room assignment, check-in, and checkout workflows.
 router.get(
   '/reservations',
   asyncHandler(async (req, res) => {
@@ -784,6 +789,7 @@ router.post(
 // CUSTOMERS
 // ============================================================
 
+// Search customer profiles and manage their linked account and reservation details.
 router.get(
   '/customers',
 
@@ -1339,6 +1345,7 @@ router.patch(
 // PAYMENTS
 // ============================================================
 
+// Review transactions and record payments without exceeding a reservation balance.
 router.get(
   '/payments',
 
@@ -1721,6 +1728,7 @@ router.post(
 // PRICING RULES
 // ============================================================
 
+// List, create, update, and remove rules used by dynamic room-rate calculations.
 router.get(
   '/pricing-rules',
   asyncHandler(async (_req, res) => {
@@ -1968,6 +1976,7 @@ router.delete(
 // PROMOTIONS
 // ============================================================
 
+// Manage promotional codes, validity windows, and redemption limits.
 router.get(
   '/promotions',
 
@@ -2129,6 +2138,7 @@ router.patch(
 // DISCOUNTS
 // ============================================================
 
+// Manage discount codes and their eligibility, visibility, and validity settings.
 router.get(
   '/discounts',
 
@@ -2387,6 +2397,7 @@ router.delete(
 // HOUSEKEEPING
 // ============================================================
 
+// Create and complete room-cleaning tasks while keeping room status synchronized.
 router.get(
   '/housekeeping',
 
@@ -2551,6 +2562,7 @@ router.post(
 // MAINTENANCE
 // ============================================================
 
+// Track repair tickets and move affected rooms through maintenance and cleaning.
 router.get(
   '/maintenance',
 

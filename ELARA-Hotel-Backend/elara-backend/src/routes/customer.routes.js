@@ -8,6 +8,7 @@ import { HttpError } from '../utils/httpError.js';
 const router = Router();
 router.use(requireAuth);
 
+// Return the signed-in customer's account and profile details.
 router.get('/me', asyncHandler(async (req, res) => {
   if (req.user.role !== 'CUSTOMER') throw new HttpError(403, 'Customer account required.');
   const profile = await prisma.customerProfile.findUnique({
@@ -28,6 +29,7 @@ router.get('/me', asyncHandler(async (req, res) => {
   });
 }));
 
+// Validate and transactionally update customer account and profile fields.
 router.patch('/me', asyncHandler(async (req, res) => {
   if (req.user.role !== 'CUSTOMER') throw new HttpError(403, 'Customer account required.');
   const input = z.object({

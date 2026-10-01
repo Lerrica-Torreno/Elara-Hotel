@@ -7,6 +7,7 @@ import { recordPayment } from '../services/payment.service.js';
 
 const router = Router();
 
+// Create or update a reservation payment from a payment-provider callback.
 router.post('/', asyncHandler(async (req, res) => {
   const input = z.object({
     reservationId: z.string().min(1),

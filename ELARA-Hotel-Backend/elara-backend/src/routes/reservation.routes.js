@@ -28,6 +28,7 @@ import {
 
 const router = Router();
 
+// Validate the guest, dates, room type, and optional promotion/payment choices for a booking.
 const createSchema =
   z.object({
     roomTypeId: z
@@ -121,6 +122,7 @@ const createSchema =
 // CREATE RESERVATION
 // ============================================================
 
+// Create a reservation, linking an existing customer profile when possible.
 router.post(
   '/',
 
@@ -312,6 +314,7 @@ router.post(
 // LOOKUP
 // ============================================================
 
+// Retrieve a reservation only when both its reference and guest email match.
 router.post(
   '/lookup',
 
@@ -384,6 +387,7 @@ router.post(
 // MY RESERVATIONS
 // ============================================================
 
+// List reservations owned by the authenticated customer profile.
 router.get(
   '/mine',
 
@@ -452,6 +456,7 @@ router.get(
 // CANCEL
 // ============================================================
 
+// Authorize the guest or staff member, then mark an eligible reservation cancelled.
 router.post(
   '/:id/cancel',
 

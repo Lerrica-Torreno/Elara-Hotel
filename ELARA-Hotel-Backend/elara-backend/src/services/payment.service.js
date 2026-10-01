@@ -3,6 +3,7 @@ import {
 } from '../utils/references.js';
 
 export async function recordPayment(tx, input) {
+  // Treat a repeated provider reference as an idempotent retry for this reservation.
   if (input.providerRef) {
     const existingProviderPayment =
       await tx.payment.findFirst({
@@ -23,6 +24,7 @@ export async function recordPayment(tx, input) {
     }
   }
 
+  // Complete the oldest pending transaction when one exists instead of creating a duplicate row.
   const pendingPayment =
     await tx.payment.findFirst({
       where: {
@@ -37,6 +39,7 @@ export async function recordPayment(tx, input) {
       }
     });
 
+  // Keep the transaction fields shared by pending-payment updates and new-payment inserts.
   const data = {
     amount:
       input.amount,

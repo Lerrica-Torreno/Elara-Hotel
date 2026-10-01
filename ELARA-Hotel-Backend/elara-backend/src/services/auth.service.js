@@ -23,6 +23,7 @@ const ADMIN_ROLES = [
 // ============================================================
 
 function jwtSecret() {
+  // Fail fast rather than signing or verifying sessions with an implicit secret.
   if (
     !process.env.JWT_SECRET
   ) {
@@ -37,6 +38,7 @@ function jwtSecret() {
 export function publicUser(
   user
 ) {
+  // Expose profile fields needed by clients without returning credential data.
   return {
     id: user.id,
     email: user.email,
@@ -49,6 +51,7 @@ export function publicUser(
 export function issueToken(
   user
 ) {
+  // Sign a session token containing the user's identity and current role.
   return jwt.sign(
     {
       sub: user.id,
@@ -66,6 +69,7 @@ export function issueToken(
 export function verifyToken(
   token
 ) {
+  // Verify token signature and expiry before middleware trusts its claims.
   return jwt.verify(
     token,
     jwtSecret()
@@ -79,6 +83,7 @@ export function verifyToken(
 function normalizeOrigin(
   value
 ) {
+  // Standardize configured and request origins for portal matching.
   return String(
     value ?? ''
   )
@@ -92,6 +97,7 @@ function normalizeOrigin(
 function getRequestOrigin(
   req
 ) {
+  // Determine the request's frontend origin from Origin or Referer headers.
   const origin =
     normalizeOrigin(
       req?.headers?.origin
@@ -129,6 +135,7 @@ function getRequestOrigin(
 export function detectPortal(
   req
 ) {
+  // Identify whether a request belongs to the admin or customer frontend.
   /*
    * Optional explicit header.
    *
@@ -196,6 +203,7 @@ export function detectPortal(
 function cookieNameForRole(
   role
 ) {
+  // Keep administrator and customer sessions in separate browser cookies.
   if (
     role ===
     'CUSTOMER'
@@ -215,6 +223,7 @@ function cookieNameForRole(
 }
 
 function cookieOptions() {
+  // Apply shared security and lifetime settings when issuing a session cookie.
   return {
     httpOnly: true,
 
@@ -239,6 +248,7 @@ function cookieOptions() {
 }
 
 function clearCookieOptions() {
+  // Match cookie scope and security flags when expiring a session cookie.
   return {
     httpOnly: true,
 
@@ -264,6 +274,7 @@ export function setAuthCookie(
   res,
   token
 ) {
+  // Write the token to the cookie associated with the role encoded in the token.
   /*
    * We issue the token ourselves, so verify it
    * and use its role to determine which portal
@@ -297,6 +308,7 @@ export function setAuthCookie(
 export function clearAuthCookie(
   res
 ) {
+  // Clear only the initiating portal's session, or both when the portal is unknown.
   /*
    * Existing routes call:
    *
@@ -354,6 +366,7 @@ export function clearAuthCookie(
 export function readToken(
   req
 ) {
+  // Prefer bearer credentials, then select the cookie matching the request's portal.
   // ----------------------------------------------------------
   // Authorization header takes precedence
   // ----------------------------------------------------------
@@ -453,6 +466,7 @@ export async function createCustomer({
   phone,
   password
 }) {
+  // Create a customer login and profile together after normalizing and checking the email.
   const normalizedEmail =
     email
       .trim()
@@ -523,6 +537,7 @@ export async function bootstrapAdmin({
   email,
   password
 }) {
+  // Allow first-admin creation only while no staff administrator account exists.
   const existingAdmins =
     await prisma.user.count({
       where: {
@@ -599,6 +614,7 @@ export async function authenticate(
   password,
   allowedRoles = null
 ) {
+  // Verify account status, portal role, and password, then record a successful login.
   const normalizedEmail =
     email
       .trim()

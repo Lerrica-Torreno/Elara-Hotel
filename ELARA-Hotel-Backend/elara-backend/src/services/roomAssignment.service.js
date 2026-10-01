@@ -1,12 +1,14 @@
 import { prisma } from '../config/prisma.js';
 
 export async function findOptimalRoom(reservationId) {
+  // Load the stay details needed to match the reservation to eligible physical rooms.
   const reservation = await prisma.reservation.findUnique({
     where: { id: reservationId },
     include: { roomType: true }
   });
   if (!reservation) return null;
 
+  // Exclude rooms already assigned to overlapping active reservations.
   const conflictingRoomIds = await prisma.reservation.findMany({
     where: {
       id: { not: reservation.id },
@@ -20,6 +22,7 @@ export async function findOptimalRoom(reservationId) {
 
   const blocked = conflictingRoomIds.map((item) => item.assignedRoomId).filter(Boolean);
 
+  // Only consider rooms of the requested type that are operational and unblocked.
   const rooms = await prisma.room.findMany({
     where: {
       roomTypeId: reservation.roomTypeId,
@@ -29,6 +32,7 @@ export async function findOptimalRoom(reservationId) {
     include: { roomType: true }
   });
 
+  // Prefer available rooms, then closer capacity fits and lower floors.
   const scored = rooms.map((room) => ({
     room,
     score:

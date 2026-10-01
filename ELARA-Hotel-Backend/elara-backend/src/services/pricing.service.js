@@ -2,10 +2,12 @@ import { prisma } from '../config/prisma.js';
 
 const ACTIVE_RESERVATION_STATUSES = ['PENDING', 'CONFIRMED', 'CHECKED_IN'];
 
+// Convert Prisma Decimal values to numbers for rate arithmetic.
 function decimal(value) {
   return Number(value ?? 0);
 }
 
+// Build the date-overlap filter shared by occupancy and availability queries.
 function overlaps(checkInDate, checkOutDate) {
   return {
     checkInDate: { lt: checkOutDate },
@@ -15,6 +17,7 @@ function overlaps(checkInDate, checkOutDate) {
 }
 
 export async function getOccupancyRate(checkInDate, checkOutDate) {
+  // Compare active room assignments with rooms that can be sold for this stay window.
   const [sellableRooms, occupiedCount] = await Promise.all([
     prisma.room.count({ where: { status: { notIn: ['MAINTENANCE', 'OUT_OF_SERVICE'] } } }),
     prisma.reservation.count({
@@ -29,6 +32,7 @@ export async function getOccupancyRate(checkInDate, checkOutDate) {
 }
 
 function ruleMatches(rule, ctx) {
+  // Apply every configured room, date, occupancy, lead-time, and demand constraint.
   if (rule.roomTypeId && rule.roomTypeId !== ctx.roomTypeId) return false;
   if (rule.startDate && ctx.checkInDate < rule.startDate) return false;
   if (rule.endDate && ctx.checkInDate > rule.endDate) return false;
@@ -42,6 +46,7 @@ function ruleMatches(rule, ctx) {
 }
 
 function applyRule(rate, rule) {
+  // Apply a fixed replacement rate or the rule's percentage and amount adjustments.
   if (rule.fixedRate != null) return decimal(rule.fixedRate);
   let next = rate;
   if (rule.adjustmentPct != null) next *= 1 + decimal(rule.adjustmentPct) / 100;
@@ -50,6 +55,7 @@ function applyRule(rate, rule) {
 }
 
 export async function calculateRate({ roomTypeId, checkInDate, checkOutDate, demandLevel = 'NORMAL' }) {
+  // Start from the active room type's base rate and apply matching rules in priority order.
   const roomType = await prisma.roomType.findUnique({ where: { id: roomTypeId } });
   if (!roomType || !roomType.isActive) return null;
 
@@ -86,6 +92,7 @@ export async function calculateRate({ roomTypeId, checkInDate, checkOutDate, dem
 }
 
 export async function getAvailableRoomTypeQuotes({ checkInDate, checkOutDate, guests }) {
+  // Return capacity-eligible room types with remaining inventory and current stay pricing.
   const roomTypes = await prisma.roomType.findMany({
     where: { isActive: true, capacity: { gte: guests } },
     orderBy: { baseRate: 'asc' }

@@ -1,3 +1,4 @@
+// Assemble API middleware and route modules into the Express application.
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -15,6 +16,7 @@ import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 export const app = express();
 
+// Canonicalize configured frontend URLs before comparing request origins.
 function normalizeOrigin(value) {
   try {
     return new URL(value.trim()).origin;
@@ -31,6 +33,7 @@ const allowedOrigins = [
   .map((origin) => normalizeOrigin(origin))
   .filter(Boolean);
 
+// Apply security, cross-origin, parsing, cookie, and request-logging middleware.
 app.disable('x-powered-by');
 app.use(helmet());
 app.use(cors({
@@ -45,8 +48,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
+// Limit repeated authentication attempts without rate-limiting normal API traffic.
 app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, limit: 100, standardHeaders: 'draft-8', legacyHeaders: false }));
 
+// Expose service health and mount each API area before the 404 and error handlers.
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', service: 'elara-hotel-api' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/public', publicRoutes);

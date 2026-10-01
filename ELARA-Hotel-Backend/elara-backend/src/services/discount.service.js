@@ -2,6 +2,7 @@ import { prisma } from '../config/prisma.js';
 import { HttpError } from '../utils/httpError.js';
 
 function roundMoney(value) {
+  // Keep computed discounts aligned with the currency's two decimal places.
   return Math.round(
     Number(value) * 100
   ) / 100;
@@ -15,6 +16,7 @@ export async function validateDiscount(
     customerVisibleOnly = true
   } = {}
 ) {
+  // Resolve a discount code, enforce its visibility and validity rules, then calculate its value.
   if (!code) {
     return {
       discount: null,
