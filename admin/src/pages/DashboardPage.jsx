@@ -25,6 +25,7 @@ import {
 
 const emptyMetrics = {
   totalRevenue: 0,
+  pendingPaymentAmount: 0,
   activeBookings: 0,
   occupancyRate: 0,
   totalRooms: 0,
@@ -137,7 +138,7 @@ export default function DashboardPage({
         </div>
       )}
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <Metric
           icon={
             CircleDollarSign
@@ -149,6 +150,23 @@ export default function DashboardPage({
               : formatCurrency(
                   Number(
                     metrics.totalRevenue ??
+                      0
+                  )
+                )
+          }
+        />
+
+        <Metric
+          icon={
+            CircleDollarSign
+          }
+          label="Pending payments"
+          value={
+            loading
+              ? "—"
+              : formatCurrency(
+                  Number(
+                    metrics.pendingPaymentAmount ??
                       0
                   )
                 )

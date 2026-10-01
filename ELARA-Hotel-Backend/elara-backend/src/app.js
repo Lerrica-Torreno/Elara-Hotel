@@ -15,10 +15,21 @@ import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 export const app = express();
 
+function normalizeOrigin(value) {
+  try {
+    return new URL(value.trim()).origin;
+  } catch {
+    return '';
+  }
+}
+
 const allowedOrigins = [
-  process.env.CUSTOMER_APP_ORIGIN,
-  process.env.ADMIN_APP_ORIGIN
-].filter(Boolean);
+  process.env.CUSTOMER_APP_ORIGIN || 'http://localhost:5174',
+  process.env.ADMIN_APP_ORIGIN || 'http://localhost:5173',
+  ...(process.env.CORS_ALLOWED_ORIGINS || '').split(',')
+]
+  .map((origin) => normalizeOrigin(origin))
+  .filter(Boolean);
 
 app.disable('x-powered-by');
 app.use(helmet());

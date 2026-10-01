@@ -1075,6 +1075,8 @@ ADMIN_APP_ORIGIN="http://localhost:5173"
 
 CUSTOMER_APP_ORIGIN="http://localhost:5174"
 
+CORS_ALLOWED_ORIGINS=""
+
 COOKIE_SECURE=false
 ```
 
@@ -1550,6 +1552,8 @@ CUSTOMER_APP_ORIGIN=http://localhost:5174
 ```
 
 The configured origins must match the actual frontend URLs.
+For additional origins, such as a LAN address, add comma-separated values to
+`CORS_ALLOWED_ORIGINS` and restart the backend.
 
 ---
 

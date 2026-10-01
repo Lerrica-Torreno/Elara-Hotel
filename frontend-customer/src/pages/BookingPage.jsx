@@ -681,6 +681,12 @@ export default function BookingPage({
             search.guests
           ),
 
+        paymentMethod:
+          paymentMethod ===
+          "Credit / Debit Card"
+            ? "CARD"
+            : "EWALLET",
+
         specialRequests:
           guest.requests.trim(),
 

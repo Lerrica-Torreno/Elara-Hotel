@@ -90,6 +90,16 @@ const createSchema =
       .string()
       .trim()
       .max(50)
+      .optional(),
+
+    paymentMethod: z
+      .enum([
+        'CARD',
+        'GCASH',
+        'EWALLET',
+        'BANK_TRANSFER',
+        'CASH'
+      ])
       .optional()
   })
   .refine(

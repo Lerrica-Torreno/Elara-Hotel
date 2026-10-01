@@ -8,6 +8,10 @@ import {
   createReservation
 } from "../src/services/reservation.service.js";
 
+import {
+  paymentReference
+} from "../src/utils/references.js";
+
 const SEED_TAG =
   "ELARA_SEED_50";
 
@@ -100,7 +104,7 @@ const originalGuests = [
 
     roomTypeCode: "DELUXE",
     checkInDate: "2026-11-20",
-    checkOutDate: "2026-11-23",
+    checkOutDate: "2026-11-24",
 
     discountCode: "SAVE500",
 
@@ -209,6 +213,7 @@ const originalGuests = [
     roomTypeCode: "FAMILY",
     checkInDate: "2026-10-08",
     checkOutDate: "2026-10-11",
+    skipPayment: true,
 
     note:
       "Cancellation test - cancel before payment"
@@ -666,55 +671,204 @@ async function ensureRequiredOffersExist() {
 |--------------------------------------------------------------------------
 */
 
-async function getRoomTypes() {
+const requiredRoomTypes = [
+  {
+    code: "DELUXE",
+    name: "Deluxe King",
+    capacity: 2,
+    beds: "1 King Bed",
+    baseRate: 3000
+  },
+  {
+    code: "TWIN",
+    name: "Premier Twin",
+    capacity: 3,
+    beds: "2 Queen Beds",
+    baseRate: 3400
+  },
+  {
+    code: "FAMILY",
+    name: "Family Suite",
+    capacity: 5,
+    beds: "2 Queen Beds + Sofa",
+    baseRate: 4300
+  },
+  {
+    code: "SUITE",
+    name: "Elara Suite",
+    capacity: 4,
+    beds: "1 King Bed + Sofa",
+    baseRate: 4800
+  }
+];
+
+async function ensureRoomTypesExist() {
   const roomTypes =
-    await prisma.roomType.findMany({
-      where: {
-        code: {
-          in: [
-            "DELUXE",
-            "TWIN",
-            "FAMILY",
-            "SUITE"
-          ]
-        }
+    await Promise.all(
+      requiredRoomTypes.map(
+        (roomType) =>
+          prisma.roomType.upsert({
+            where: {
+              code:
+                roomType.code
+            },
+            update: {},
+            create:
+              roomType
+          })
+      )
+    );
+
+  return new Map(
+    roomTypes.map(
+      (roomType) => [
+        roomType.code,
+        roomType
+      ]
+    )
+  );
+}
+
+function getPeakSeedOccupancy(
+  roomTypeCode
+) {
+  const events =
+    guests
+      .filter(
+        (guest) =>
+          guest.roomTypeCode ===
+          roomTypeCode
+      )
+      .flatMap(
+        (guest) => [
+          {
+            date:
+              guest.checkInDate,
+            change: 1
+          },
+          {
+            date:
+              guest.checkOutDate,
+            change: -1
+          }
+        ]
+      )
+      .sort(
+        (firstEvent, secondEvent) =>
+          firstEvent.date.localeCompare(
+            secondEvent.date
+          ) ||
+          firstEvent.change -
+            secondEvent.change
+      );
+
+  let activeBookings = 0;
+  let peakOccupancy = 0;
+
+  for (
+    const event
+    of events
+  ) {
+    activeBookings +=
+      event.change;
+
+    peakOccupancy =
+      Math.max(
+        peakOccupancy,
+        activeBookings
+      );
+  }
+
+  return peakOccupancy;
+}
+
+async function ensureSeedRoomsExist(
+  roomTypeMap
+) {
+  const existingRooms =
+    await prisma.room.findMany({
+      select: {
+        roomNumber: true
       }
     });
 
-  const map =
-    new Map();
-
-  for (
-    const roomType
-    of roomTypes
-  ) {
-    map.set(
-      roomType.code,
-      roomType
-    );
-  }
-
-  for (
-    const code
-    of [
-      "DELUXE",
-      "TWIN",
-      "FAMILY",
-      "SUITE"
-    ]
-  ) {
-    if (
-      !map.has(
-        code
+  const usedRoomNumbers =
+    new Set(
+      existingRooms.map(
+        (room) =>
+          room.roomNumber
       )
-    ) {
-      throw new Error(
-        `Missing room type with code ${code}.`
+    );
+
+  for (
+    const [code, roomType]
+    of roomTypeMap
+  ) {
+    const requiredCount =
+      getPeakSeedOccupancy(
+        code
       );
+
+    const existingCount =
+      await prisma.room.count({
+        where: {
+          roomTypeId:
+            roomType.id,
+          status: {
+            notIn: [
+              "MAINTENANCE",
+              "OUT_OF_SERVICE"
+            ]
+          }
+        }
+      });
+
+    const roomsToCreate = [];
+    let roomNumberIndex = 1;
+
+    while (
+      existingCount +
+        roomsToCreate.length <
+      requiredCount
+    ) {
+      const roomNumber =
+        `SEED50-${code}-${String(
+          roomNumberIndex
+        ).padStart(3, "0")}`;
+
+      roomNumberIndex += 1;
+
+      if (
+        usedRoomNumbers.has(
+          roomNumber
+        )
+      ) {
+        continue;
+      }
+
+      usedRoomNumbers.add(
+        roomNumber
+      );
+
+      roomsToCreate.push({
+        roomNumber,
+        roomTypeId:
+          roomType.id,
+        floor: 1,
+        notes:
+          `${SEED_TAG} test inventory`
+      });
+    }
+
+    if (
+      roomsToCreate.length
+    ) {
+      await prisma.room.createMany({
+        data:
+          roomsToCreate
+      });
     }
   }
-
-  return map;
 }
 
 /*
@@ -985,6 +1139,38 @@ async function seedReservation(
       null
     );
 
+  if (
+    !guest.skipPayment
+  ) {
+    await prisma.payment.create({
+      data: {
+        reference:
+          paymentReference(),
+
+        reservationId:
+          reservation.id,
+
+        amount:
+          reservation.totalAmount,
+
+        method:
+          "CARD",
+
+        status:
+          "PAID",
+
+        provider:
+          "ELARA TEST SEED",
+
+        providerRef:
+          `${SEED_TAG}-${position}`,
+
+        paidAt:
+          new Date()
+      }
+    });
+  }
+
   return {
     reservation,
     roomType
@@ -1017,7 +1203,11 @@ async function main() {
     await ensureRequiredOffersExist();
 
     const roomTypeMap =
-      await getRoomTypes();
+      await ensureRoomTypesExist();
+
+    await ensureSeedRoomsExist(
+      roomTypeMap
+    );
 
     await deletePreviousSeedReservations();
 

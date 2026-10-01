@@ -11,6 +11,7 @@ import {
 } from '../middleware/auth.js';
 
 import { findOptimalRoom } from '../services/roomAssignment.service.js';
+import { recordPayment } from '../services/payment.service.js';
 import { HttpError } from '../utils/httpError.js';
 
 const router = Router();
@@ -41,6 +42,7 @@ router.get(
       occupiedRooms,
       activeBookings,
       revenue,
+      pendingPayments,
       arrivalsToday,
       departuresToday
     ] = await Promise.all([
@@ -72,7 +74,26 @@ router.get(
 
       prisma.payment.aggregate({
         where: {
-          status: 'PAID'
+          status: 'PAID',
+          reservation: {
+            status: {
+              not: 'CANCELLED'
+            }
+          }
+        },
+        _sum: {
+          amount: true
+        }
+      }),
+
+      prisma.payment.aggregate({
+        where: {
+          status: 'PENDING',
+          reservation: {
+            status: {
+              not: 'CANCELLED'
+            }
+          }
         },
         _sum: {
           amount: true
@@ -114,6 +135,10 @@ router.get(
       metrics: {
         totalRevenue: Number(
           revenue._sum.amount ?? 0
+        ),
+
+        pendingPaymentAmount: Number(
+          pendingPayments._sum.amount ?? 0
         ),
 
         activeBookings,
@@ -1634,55 +1659,57 @@ router.post(
       );
     }
 
-    const reference =
-      `PAY-${randomUUID()
-        .replaceAll('-', '')
-        .slice(0, 12)
-        .toUpperCase()}`;
-
     const payment =
-      await prisma.payment.create({
-        data: {
-          reference,
+      await prisma.$transaction(
+        async (tx) => {
+          const savedPayment =
+            await recordPayment(
+              tx,
+              {
+                reservationId:
+                  input.reservationId,
 
-          reservationId:
-            input.reservationId,
+                amount:
+                  input.amount,
 
-          amount:
-            input.amount,
+                method:
+                  input.method,
 
-          method:
-            input.method,
+                status:
+                  input.status,
 
-          status:
-            input.status,
+                provider:
+                  input.provider,
 
-          provider:
-            input.provider ||
-            null,
+                providerRef:
+                  input.providerRef,
 
-          providerRef:
-            input.providerRef ||
-            null,
+                paidAt:
+                  input.status ===
+                    'PAID' ||
+                  input.status ===
+                    'PARTIALLY_PAID'
+                    ? new Date()
+                    : null
+              }
+            );
 
-          paidAt:
-            input.status ===
-              'PAID' ||
-            input.status ===
-              'PARTIALLY_PAID'
-              ? new Date()
-              : null
-        },
-
-        include: {
-          reservation: {
+          return tx.payment.findUnique({
+            where: {
+              id:
+                savedPayment.id
+            },
             include: {
-              roomType: true,
-              assignedRoom: true
+              reservation: {
+                include: {
+                  roomType: true,
+                  assignedRoom: true
+                }
+              }
             }
-          }
+          });
         }
-      });
+      );
 
     res.status(201).json({
       payment

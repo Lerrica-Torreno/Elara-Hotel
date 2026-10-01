@@ -337,7 +337,9 @@ export default function PaymentsPage() {
           .filter(
             (payment) =>
               payment.status ===
-              "PAID"
+                "PAID" &&
+              payment.reservation?.status !==
+                "CANCELLED"
           )
           .reduce(
             (

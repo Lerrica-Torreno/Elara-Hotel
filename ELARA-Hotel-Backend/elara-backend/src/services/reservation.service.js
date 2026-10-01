@@ -23,6 +23,10 @@ import {
 } from '../utils/references.js';
 
 import {
+  paymentReference
+} from '../utils/references.js';
+
+import {
   HttpError
 } from '../utils/httpError.js';
 
@@ -436,6 +440,31 @@ export async function createReservation(
               true
           }
         });
+
+      if (
+        input.paymentMethod
+      ) {
+        await tx.payment.create({
+          data: {
+            reference:
+              paymentReference(),
+
+            reservationId:
+              reservation.id,
+
+            amount:
+              new Prisma.Decimal(
+                totalAmount
+              ),
+
+            method:
+              input.paymentMethod,
+
+            status:
+              'PENDING'
+          }
+        });
+      }
 
       if (
         promotion
